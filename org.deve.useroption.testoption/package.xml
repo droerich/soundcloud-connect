@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE package SYSTEM "http://www.woltlab.com/DTDs/package.dtd">
+<package name="org.deve.useroption.testoption">
+	<packageInformation>
+		<packageName>Useroption-Test</packageName>
+		<packageDescription lang="de"><![CDATA[Für den Test von Useroptions]]></packageDescription>
+		<packageDescription lang="en"><![CDATA[Test of useroptions]]></packageDescription>
+
+		<isunique>1</isunique>
+		<version>0.0.1</version>
+		<date>2012-08-29</date>
+		<plugin>com.woltlab.wcf</plugin>
+	</packageInformation>
+
+	<authorInformation>
+		<author>Deve</author>
+		<authorURL>http://freakshit.org</authorURL>
+	</authorInformation>
+
+	<instructions type="install">
+		<files>files.tar</files>
+		<useroptions>useroptions.xml</useroptions>
+		<eventlistener>eventlistener.xml</eventlistener>
+		<languages languagecode="de">lang/de.xml</languages>
+	</instructions>
+	<instructions type="update" fromversion="*">
+		<files>files.tar</files>
+		<useroptions>useroptions.xml</useroptions>
+		<eventlistener>eventlistener.xml</eventlistener>
+		<languages languagecode="de">lang/de.xml</languages>
+	</instructions>
+</package>

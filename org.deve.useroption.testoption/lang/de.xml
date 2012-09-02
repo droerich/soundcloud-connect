@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language languagecode="de">
+	<category name="wcf.user.option">
+		<item name="wcf.user.option.testoption">
+		  <![CDATA[]]>
+		</item>
+		
+		<item name="wcf.user.option.testoptionLinkerimage">
+		  <![CDATA[Hier kommt Lisa.]]>
+		</item>
+
+		<item name="wcf.user.option.testoption.description">
+		  <![CDATA[Weiß jetzt auch nicht, was ich sagen soll.]]>
+		</item>
+		
+		<item name="wcf.user.option.testoptionLinkerimage.description">
+		  <![CDATA[Jaja, geiles Bild.]]>
+		</item>
+
+		<item name="wcf.user.option.category.profile.testoption">
+		  <![CDATA[Test-Useroptionen]]>
+		</item>
+
+	</category>
+</language>

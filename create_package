@@ -1,0 +1,20 @@
+#!/bin/bash
+
+PACKAGE_NAME=org.deve.useroption.testoption
+FILES_TAR=files.tar
+
+echo "Packing files.tar"
+echo ""
+cd $PACKAGE_NAME;
+tar -cv --exclude=*~ -f $FILES_TAR lib
+# mv files.tar $PACKAGE_NAME
+echo ""
+
+echo "Packing package"
+echo ""
+# cd $PACKAGE_NAME
+tar -cv --exclude=*~ --exclude=lib -f $PACKAGE_NAME.tar *
+mv $PACKAGE_NAME.tar ..
+echo ""
+
+echo "Finished."

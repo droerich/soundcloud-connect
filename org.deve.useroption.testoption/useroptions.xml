@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE data SYSTEM "http://www.woltlab.com/DTDs/options.dtd">
+<data>
+	<import>
+		<categories>
+			<category name="profile.testoption">
+				<parent>profile</parent>
+			</category>
+		</categories>
+		<options>
+			<option name="testoption">
+				<categoryname>profile.testoption</categoryname>
+				<optiontype>text</optiontype>
+				<outputclass>UserOptionOutputTestoption</outputclass>
+			</option>
+ 			<option name="testoptionLinkerimage"> -->
+				<categoryname>profile.testoption</categoryname>
+				<optiontype>linkerimage</optiontype>
+				<outputclass>UserOptionOutputMyLinkerimage</outputclass>
+			</option> 
+		</options>
+	</import>
+</data>
