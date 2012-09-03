@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PACKAGE_NAME=org.deve.useroption.testoption
+PACKAGE_NAME=org.freakshit.useroption.soundcloudconnect
 FILES_TAR=files.tar
 
 echo "Packing files.tar"

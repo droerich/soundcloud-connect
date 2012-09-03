@@ -36,13 +36,31 @@ class OptionTypeLinkerimage implements OptionType{
 		$return .= "<a href=\"$sc_authorizeUrl\" target=\"_blank\">";
 		$return .= "<img src=\"$buttonImageUrl\">";
 		$return .= '</a>';
+		$return .= '</br>';
+		if (isset($_REQUEST['action'])) {
+			$return .= 'Habe action ' . $_REQUEST['action'] . ' empfangen.</br>';
+			if( $_REQUEST['action'] == 'soundcloudConnect' ) {
+				// exchange authorization code for access token
+				$sc_code = $_GET['code'];
+				$sc_token = $sc_client->accessToken($sc_code);
 		
-		// Simulate event
-		$classname = 'OptionTypeLinkerimage';
-		$connector = new SoundcloudConnect();
-		echo "$classname: Start authorization...</br>";		
-		$connector->authorize();
-		echo "$classname: Finished.</br>";
+				// make an authenticated call
+				try {
+					$sc_response = json_decode($sc_client->get('me'), true);
+				} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
+					exit($e->getMessage());
+				}
+				// Save Soundcloud user ID
+				$sc_userId = $sc_response['id'];		
+				$return . "Deine Soundcloud User-ID lautet $sc_userId</br>";
+			} else {
+				$return . "Action " . $_REQUEST['action'] . " ist unbekannt.</br>";
+			}
+		} else {
+			$return .= 'Habe keine action empfangen.</br>';
+		}
+		
+		
 		
 		
 		return $return;

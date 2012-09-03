@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE package SYSTEM "http://www.woltlab.com/DTDs/package.dtd">
-<package name="org.deve.useroption.testoption">
+<package name="org.freakshit.useroption.soundcloudconnect">
 	<packageInformation>
-		<packageName>Useroption-Test</packageName>
-		<packageDescription lang="de"><![CDATA[Für den Test von Useroptions]]></packageDescription>
-		<packageDescription lang="en"><![CDATA[Test of useroptions]]></packageDescription>
+		<packageName>Soundcloud Connect</packageName>
+		<packageDescription lang="de"><![CDATA[Verbindet einen Forum-Benutzer mit einem Soundcloud-Konto]]></packageDescription>
+		<packageDescription lang="en"><![CDATA[Connects a forum user with a Soundcloud account]]></packageDescription>
 
 		<isunique>1</isunique>
 		<version>0.0.1</version>
@@ -20,13 +20,11 @@
 	<instructions type="install">
 		<files>files.tar</files>
 		<useroptions>useroptions.xml</useroptions>
-		<eventlistener>eventlistener.xml</eventlistener>
 		<languages languagecode="de">lang/de.xml</languages>
 	</instructions>
 	<instructions type="update" fromversion="*">
 		<files>files.tar</files>
 		<useroptions>useroptions.xml</useroptions>
-		<eventlistener>eventlistener.xml</eventlistener>
 		<languages languagecode="de">lang/de.xml</languages>
 	</instructions>
 </package>
