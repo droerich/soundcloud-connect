@@ -29,35 +29,37 @@ class OptionTypeLinkerimage implements OptionType{
 		// URL to SC-connect-image
 		$buttonImageUrl = 'http://connect.soundcloud.com/2/btn-connect-l.png';
 		
-		// Get SC authorize URL
+		// Get SC authorize URL and send the URL parameter status along 
+		// with it. It will be sent back with the redirect URI.
 		$sc_authorizeUrl = $sc_client->getAuthorizeUrl() . '&state=soundcloudConnect';
 		
-		$return = 'Übrigens ist der Wert von WCF_DIR ' . WCF_DIR . '</br>';
-		$return .= "<a href=\"$sc_authorizeUrl\" target=\"_blank\">";
+		$return = "<a href=\"$sc_authorizeUrl\" target=\"_self\">";
 		$return .= "<img src=\"$buttonImageUrl\">";
 		$return .= '</a>';
 		$return .= '</br>';
-		if (isset($_REQUEST['action'])) {
-			$return .= 'Habe action ' . $_REQUEST['action'] . ' empfangen.</br>';
-			if( $_REQUEST['action'] == 'soundcloudConnect' ) {
-				// exchange authorization code for access token
-				$sc_code = $_GET['code'];
-				$sc_token = $sc_client->accessToken($sc_code);
+		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') {
+// 		if (isset($_GET['code'])) {
 		
-				// make an authenticated call
-				try {
-					$sc_response = json_decode($sc_client->get('me'), true);
-				} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
-					exit($e->getMessage());
-				}
-				// Save Soundcloud user ID
-				$sc_userId = $sc_response['id'];		
-				$return . "Deine Soundcloud User-ID lautet $sc_userId</br>";
-			} else {
-				$return . "Action " . $_REQUEST['action'] . " ist unbekannt.</br>";
+			$return .= 'Habe code-Parameter empfangen. Starte Decodierung...</br>';
+			
+			// exchange authorization code for access token
+			$sc_code = $_GET['code'];
+			$sc_token = $sc_client->accessToken($sc_code);
+	
+			// make an authenticated call
+			try {
+				$sc_response = json_decode($sc_client->get('me'), true);
+			} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
+// 				exit($e->getMessage());
+				$return .= "Soundcloud-Fehler: " . $e->getMessage() . '</br>';
+				return $return;
 			}
+			// Save Soundcloud user ID
+			$sc_userId = $sc_response['id'];		
+			$return .= 'Deine Soundcloud User-ID lautet <b>' . $sc_userId . '</b></br>';			
+			
 		} else {
-			$return .= 'Habe keine action empfangen.</br>';
+			$return .= 'Habe keinen code empfangen.</br>';
 		}
 		
 		return $return;
