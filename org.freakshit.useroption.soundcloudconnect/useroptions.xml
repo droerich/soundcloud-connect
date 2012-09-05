@@ -3,18 +3,18 @@
 <data>
 	<import>
 		<categories>
-			<category name="profile.testoption">
+			<category name="profile.soundcloud">
 				<parent>profile</parent>
 			</category>
 		</categories>
 		<options>
-			<option name="testoption">
-				<categoryname>profile.testoption</categoryname>
+			<option name="soundcloudName">
+				<categoryname>profile.soundcloud</categoryname>
 				<optiontype>text</optiontype>
 				<outputclass>UserOptionOutputTestoption</outputclass>
 			</option>
- 			<option name="testoptionLinkerimage"> -->
-				<categoryname>profile.testoption</categoryname>
+ 			<option name="soundcloudConnect"> -->
+				<categoryname>profile.soundcloud</categoryname>
 				<optiontype>linkerimage</optiontype>
 				<outputclass>UserOptionOutputMyLinkerimage</outputclass>
 			</option> 

@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language languagecode="de">
 	<category name="wcf.user.option">
-		<item name="wcf.user.option.testoption">
-		  <![CDATA[]]>
+		<item name="wcf.user.option.category.profile.soundcloud">
+		  <![CDATA[Soundcloud]]>
 		</item>
 		
-		<item name="wcf.user.option.testoptionLinkerimage">
-		  <![CDATA[Hier kommt Lisa.]]>
-		</item>
-
-		<item name="wcf.user.option.testoption.description">
-		  <![CDATA[Weiß jetzt auch nicht, was ich sagen soll.]]>
+		<item name="wcf.user.option.soundcloudName">
+		  <![CDATA[Soundcloud-Name]]>
 		</item>
 		
-		<item name="wcf.user.option.testoptionLinkerimage.description">
-		  <![CDATA[Jaja, geiles Bild.]]>
+		<item name="wcf.user.option.soundcloudName.description">
+		  <![CDATA[Gib hier deinen Soundcloud-Namen ein.]]>
+		</item>
+		
+		<item name="wcf.user.option.soundcloudConnect">
+		  <![CDATA[Soundcloud Connect]]>
 		</item>
 
-		<item name="wcf.user.option.category.profile.testoption">
-		  <![CDATA[Test-Useroptionen]]>
+		<item name="wcf.user.option.soundcloudConnect.description">
+		  <![CDATA[Klicke auf das Soundcloud-Logo, um dein WebBeatz-Konto mit deinem Soundcloud-Konto zu verbinden.]]>
 		</item>
-
 	</category>
 </language>
