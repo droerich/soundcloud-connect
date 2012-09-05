@@ -9,13 +9,18 @@ require_once (WCF_DIR . 'lib/data/soundcloud/Soundcloud.php');
 define('CLIENT_ID', 'd3b9d13d8379b6c19044e4ec6a321102');
 define('CLIENT_SECRET', '9c3b63959977bf61404110fc603427f2');
 define('REDIRECT_URL', 'http://www.meniunddeve.de/wbb-test/index.php?form=UserProfileEdit');
-//define('REDIRECT_URL', 'http://www.meniunddeve.de/wbb-test/scredirect.php');
 
 /**
  * My implementation of a user option type
  *
  */
 class OptionTypeLinkerimage implements OptionType{
+
+	/*
+	 * The Soundcloud User ID
+	 */
+	private $sc_userId = null;
+
 	/**
 	 * Returns the html code for the form element of this option.
 	 * 
@@ -23,6 +28,12 @@ class OptionTypeLinkerimage implements OptionType{
 	 * @return	string		html
 	 */
 	public function getFormElement(&$optionData) {
+		// DEBUG
+		$return = "<h3>Inhalt von optionData</h3>";
+		foreach ( $optionData as $x ) {
+			  $return .= "<tt>$x</tt></br>";
+		}
+	
 		// create SC client object with app credentials
 		$sc_client = new Services_Soundcloud(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 		
@@ -33,12 +44,12 @@ class OptionTypeLinkerimage implements OptionType{
 		// with it. It will be sent back with the redirect URI.
 		$sc_authorizeUrl = $sc_client->getAuthorizeUrl() . '&state=soundcloudConnect';
 		
-		$return = "<a href=\"$sc_authorizeUrl\" target=\"_self\">";
+		// DEBUG: Punkt in nächster Zeile entfernen
+		$return .= "<a href=\"$sc_authorizeUrl\" target=\"_self\">";
 		$return .= "<img src=\"$buttonImageUrl\">";
 		$return .= '</a>';
 		$return .= '</br>';
 		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') {
-// 		if (isset($_GET['code'])) {
 		
 			$return .= 'Habe code-Parameter empfangen. Starte Decodierung...</br>';
 			
@@ -55,12 +66,15 @@ class OptionTypeLinkerimage implements OptionType{
 				return $return;
 			}
 			// Save Soundcloud user ID
-			$sc_userId = $sc_response['id'];		
-			$return .= 'Deine Soundcloud User-ID lautet <b>' . $sc_userId . '</b></br>';			
+			$this->sc_userId = $sc_response['id'];		
+// 			$return .= 'Deine Soundcloud User-ID lautet <b>' . $this->sc_userId . '</b></br>';
+			$return .= 'Deine Soundcloud User-ID lautet <b>' . $this->getData(null, null) . '</b></br>';
 			
 		} else {
 			$return .= 'Habe keinen code empfangen.</br>';
 		}
+		
+		WCF::getTPL()->assign('newValue', $this->sc_userId);
 		
 		return $return;
 	}
@@ -83,8 +97,11 @@ class OptionTypeLinkerimage implements OptionType{
 	 * @return	string
 	 */
 	public function getData($optionData, $newValue){
-		//return $newValue;
-		return "Hallo Horst </br>";
+		//return user ID
+// 		echo 'this->sc_userId: ' . $this->sc_userId . "\n\n";
+// 		echo "Hallo alle!\n";
+// 		return $this->sc_userId;
+		return $newValue;
 	}
 }
 ?>
