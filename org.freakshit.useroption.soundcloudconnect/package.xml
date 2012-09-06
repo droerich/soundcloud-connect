@@ -19,11 +19,13 @@
 
 	<instructions type="install">
 		<files>files.tar</files>
+		<sql>install.sql</sql>
 		<useroptions>useroptions.xml</useroptions>
 		<languages languagecode="de">lang/de.xml</languages>
 	</instructions>
 	<instructions type="update" fromversion="*">
 		<files>files.tar</files>
+		<sql>install.sql</sql>
 		<useroptions>useroptions.xml</useroptions>
 		<languages languagecode="de">lang/de.xml</languages>
 	</instructions>

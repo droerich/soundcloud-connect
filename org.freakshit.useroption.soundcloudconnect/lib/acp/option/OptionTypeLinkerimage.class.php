@@ -33,7 +33,13 @@ class OptionTypeLinkerimage implements OptionType{
 		foreach ( $optionData as $x ) {
 			  $return .= "<tt>$x</tt></br>";
 		}
-	
+		$return .= 'Der Wert von WCF_N ist ' . WCF_N . '</br>';
+		if ( $this->isUserConnected( WCF::getUser()->userID ) ) {
+			$return .= 'Du bist bereits mit Soundcloud verbunden.</br>';
+		} else {
+			$return .= 'Du bist noch nicht mit Soundcloud verbunden.</br>';
+		}
+		
 		// create SC client object with app credentials
 		$sc_client = new Services_Soundcloud(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 		
@@ -66,15 +72,17 @@ class OptionTypeLinkerimage implements OptionType{
 				return $return;
 			}
 			// Save Soundcloud user ID
-			$this->sc_userId = $sc_response['id'];		
-// 			$return .= 'Deine Soundcloud User-ID lautet <b>' . $this->sc_userId . '</b></br>';
-			$return .= 'Deine Soundcloud User-ID lautet <b>' . $this->getData(null, null) . '</b></br>';
+			$this->sc_userId = $sc_response['id'];
+			$sc_username = $sc_response['username'];
+			$return .= 'Deine Soundcloud User-ID lautet <b>' . $this->sc_userId . '</b>';
+			$return .= "und dein Benutzername $sc_username</br>";
+			
+			// Save the soundcloud data to the database
+			$this->saveSoundcloudUser( $this->sc_userId );
 			
 		} else {
 			$return .= 'Habe keinen code empfangen.</br>';
 		}
-		
-		WCF::getTPL()->assign('newValue', $this->sc_userId);
 		
 		return $return;
 	}
@@ -102,6 +110,23 @@ class OptionTypeLinkerimage implements OptionType{
 // 		echo "Hallo alle!\n";
 // 		return $this->sc_userId;
 		return $newValue;
+	}
+	
+	private function saveSoundcloudUser( $sc_userId ) {
+		$sqlQuery = 'REPLACE INTO	wcf' . WCF_N . '_user_soundcloud_connect
+				(userID, soundcloudID)
+					VALUES (' . intval(WCF::getUser()->userID) . ", '" . $sc_userId . "')";
+		WCF::getDB()->sendQuery($sqlQuery);
+	}
+	
+	private function isUserConnected( $wcf_userID ) {
+		$sqlQuery = 'SELECT soundcloudID
+			     FROM wcf' . WCF_N . '_user_soundcloud_connect
+			     WHERE userID = ' . intval($wcf_userID);
+		$row = WCF::getDB()->getFirstRow( $sqlQuery );
+		
+		$sc_userId = $row['soundcloudID'];
+		return !empty($sc_userId);
 	}
 }
 ?>
