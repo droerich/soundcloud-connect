@@ -16,11 +16,7 @@ define('REDIRECT_URL', 'http://www.meniunddeve.de/wbb-test/index.php?form=UserPr
  */
 class OptionTypeLinkerimage implements OptionType{
 
-	/*
-	 * The Soundcloud User ID
-	 */
-	private $sc_userId = null;
-
+	
 	/**
 	 * Returns the html code for the form element of this option.
 	 * 
@@ -34,21 +30,25 @@ class OptionTypeLinkerimage implements OptionType{
 			  $return .= "<tt>$x</tt></br>";
 		}
 		$return .= 'Der Wert von WCF_N ist ' . WCF_N . '</br>';
+		
+		// create SC client object with app credentials
+		$sc_client = new Services_Soundcloud(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
+		
 		if ( $this->isUserConnected( WCF::getUser()->userID ) ) {
+			
 			$return .= 'Du bist bereits mit Soundcloud verbunden.</br>';
 		} else {
 			$return .= 'Du bist noch nicht mit Soundcloud verbunden.</br>';
 		}
-		
-		// create SC client object with app credentials
-		$sc_client = new Services_Soundcloud(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 		
 		// URL to SC-connect-image
 		$buttonImageUrl = 'http://connect.soundcloud.com/2/btn-connect-l.png';
 		
 		// Get SC authorize URL and send the URL parameter status along 
 		// with it. It will be sent back with the redirect URI.
-		$sc_authorizeUrl = $sc_client->getAuthorizeUrl() . '&state=soundcloudConnect';
+		$sc_authorizeUrl = $sc_client->getAuthorizeUrl();
+		$sc_authorizeUrl .= '&state=soundcloudConnect'; // will be sent back by Soundcloud
+		$sc_authorizeUrl .= '&scope=non-expiring'; // request non-expiring auth token		
 		
 		// DEBUG: Punkt in nächster Zeile entfernen
 		$return .= "<a href=\"$sc_authorizeUrl\" target=\"_self\">";
@@ -62,12 +62,14 @@ class OptionTypeLinkerimage implements OptionType{
 			// exchange authorization code for access token
 			$sc_code = $_GET['code'];
 			$sc_token = $sc_client->accessToken($sc_code);
+			
+			// save auth token to database
+			$this->saveSoundcloudAccessToken( $sc_token );
 	
 			// make an authenticated call
 			try {
 				$sc_response = json_decode($sc_client->get('me'), true);
 			} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
-// 				exit($e->getMessage());
 				$return .= "Soundcloud-Fehler: " . $e->getMessage() . '</br>';
 				return $return;
 			}
@@ -113,9 +115,10 @@ class OptionTypeLinkerimage implements OptionType{
 	}
 	
 	private function saveSoundcloudUser( $sc_userId ) {
-		$sqlQuery = 'REPLACE INTO	wcf' . WCF_N . '_user_soundcloud_connect
-				(userID, soundcloudID)
-					VALUES (' . intval(WCF::getUser()->userID) . ", '" . $sc_userId . "')";
+		$table_name = 'wcf' . WCF_N . '_user_soundcloud_connect';
+		$sqlQuery  = 'UPDATE ' . $table_name . ' ';
+		$sqlQuery .= 'SET `soundcloudID` = \'' . $sc_userId . '\' ';
+		$sqlQuery .= 'WHERE `' . $table_name .'`.`userID` = 1'; 
 		WCF::getDB()->sendQuery($sqlQuery);
 	}
 	
@@ -127,6 +130,17 @@ class OptionTypeLinkerimage implements OptionType{
 		
 		$sc_userId = $row['soundcloudID'];
 		return !empty($sc_userId);
+	}
+	
+	private function saveSoundcloudAccessToken( $sc_token ) {
+		// DEBUG
+		// die( "Soundcloud access token: ${sc_token['access_token']}, expires ${sc_token['scope']} " );
+		$sqlQuery = 'REPLACE INTO	wcf' . WCF_N . '_user_soundcloud_connect
+				(userID, accessToken)
+					VALUES (' . intval(WCF::getUser()->userID) . ", '" . $sc_token['access_token'] . "')";
+		// DEBUG
+		// die( "In saveSoundcloudAccessToken(): $sqlQuery" );
+		WCF::getDB()->sendQuery($sqlQuery);		
 	}
 }
 ?>
