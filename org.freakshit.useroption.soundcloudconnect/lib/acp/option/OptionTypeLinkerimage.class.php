@@ -24,40 +24,26 @@ class OptionTypeLinkerimage implements OptionType{
 	 * @return	string		html
 	 */
 	public function getFormElement(&$optionData) {
-		// DEBUG
-		$return = "<h3>Inhalt von optionData</h3>";
-		foreach ( $optionData as $x ) {
-			  $return .= "<tt>$x</tt></br>";
-		}
-		$return .= 'Der Wert von WCF_N ist ' . WCF_N . '</br>';
-		
+	
 		// create SC client object with app credentials
 		$sc_client = new Services_Soundcloud(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 		
-		if ( $this->isUserConnected( WCF::getUser()->userID ) ) {
-			
-			$return .= 'Du bist bereits mit Soundcloud verbunden.</br>';
-		} else {
-			$return .= 'Du bist noch nicht mit Soundcloud verbunden.</br>';
-		}
-		
-		// URL to SC-connect-image
-		$buttonImageUrl = 'http://connect.soundcloud.com/2/btn-connect-l.png';
+		// path to Soundcloud icons
+		$connectImageUrl = './wcf/icon/btn-connect-m.png';
+		$disconnectImageUrl = './wcf/icon/btn-disconnect-m.png';
 		
 		// Get SC authorize URL and send the URL parameter status along 
 		// with it. It will be sent back with the redirect URI.
-		$sc_authorizeUrl = $sc_client->getAuthorizeUrl();
-		$sc_authorizeUrl .= '&state=soundcloudConnect'; // will be sent back by Soundcloud
-		$sc_authorizeUrl .= '&scope=non-expiring'; // request non-expiring auth token		
+		$sc_connectUrl = $sc_client->getAuthorizeUrl();
+		$sc_connectUrl .= '&state=soundcloudConnect'; // will be sent back by Soundcloud
+		$sc_connectUrl .= '&scope=non-expiring'; // request non-expiring auth token
 		
-		// DEBUG: Punkt in nächster Zeile entfernen
-		$return .= "<a href=\"$sc_authorizeUrl\" target=\"_self\">";
-		$return .= "<img src=\"$buttonImageUrl\">";
-		$return .= '</a>';
-		$return .= '</br>';
-		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') {
+		// TODO: Löschen der Soundcloud-Daten implementieren
+		$sc_disconnectUrl = '';
 		
-			$return .= 'Habe code-Parameter empfangen. Starte Decodierung...</br>';
+		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') { // Aufruf kommt von Soundcloud (Redirect URI) -> Autorisierungsvorgang
+	
+			$return = 'Habe code-Parameter empfangen. Starte Decodierung...</br>';
 			
 			// exchange authorization code for access token
 			$sc_code = $_GET['code'];
@@ -74,18 +60,49 @@ class OptionTypeLinkerimage implements OptionType{
 				return $return;
 			}
 			// Save Soundcloud user ID
-			$this->sc_userId = $sc_response['id'];
+			$sc_userId = $sc_response['id'];
 			$sc_username = $sc_response['username'];
-			$return .= 'Deine Soundcloud User-ID lautet <b>' . $this->sc_userId . '</b>';
-			$return .= "und dein Benutzername $sc_username</br>";
+			
+			// Display disconnect-button
+			$return  = "<a href=\"$sc_disconnectUrl\" target=\"_self\">";
+			$return .= "<img src=\"$disconnectImageUrl\">";
+			$return .= '</a>';
+			$return .= '</br>';
 			
 			// Save the soundcloud data to the database
-			$this->saveSoundcloudUser( $this->sc_userId );
+			$this->saveSoundcloudUser( $sc_userId );
 			
-		} else {
-			$return .= 'Habe keinen code empfangen.</br>';
+			$return .= 'Soundcloud-Autorisierung war erfolgreich.</br>';
+						
+		} else { // Nicht im Autorisierungs-Vorgang
+			if ( $this->isUserConnected( WCF::getUser()->userID ) ) { // Benutzer is bereits mit SC verbunden
+				// Get Soundcloud username from Soundcloud				
+				$sc_token = $this->fetchSoundcloudAccessToken( intval(WCF::getUser()->userID) );
+				$sc_client->setAccessToken( $sc_token );
+				try {
+					$sc_response = json_decode($sc_client->get('me'), true);
+				} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
+					$return = "Soundcloud-Fehler: " . $e->getMessage() . '</br>';
+					return $return;
+				}			
+				$sc_username = $sc_response['username'];
+				
+				// Display disconnect-button
+				$return  = "<a href=\"$sc_disconnectUrl\" target=\"_self\">";
+				$return .= "<img src=\"$disconnectImageUrl\">";
+				$return .= '</a>';
+				$return .= '</br>';
+				$return .= "Dein Profil ist mit dem Soundcloud-Benutzer <b>${sc_username}</b> verbunden.</br>";
+			} else { // Benutzer ist noch nicht mit SC verbunden und befindet sich auch nicht im Autorisierungs-Vorgang
+			
+				// Display Soundcloud connect-button
+				$return  = "<a href=\"$sc_connectUrl\" target=\"_self\">";
+				$return .= "<img src=\"$connectImageUrl\">";
+				$return .= '</a>';
+				$return .= '</br>';
+				$return .= 'Du bist noch nicht mit Soundcloud verbunden.</br>';
+			}
 		}
-		
 		return $return;
 	}
 	
@@ -107,18 +124,15 @@ class OptionTypeLinkerimage implements OptionType{
 	 * @return	string
 	 */
 	public function getData($optionData, $newValue){
-		//return user ID
-// 		echo 'this->sc_userId: ' . $this->sc_userId . "\n\n";
-// 		echo "Hallo alle!\n";
-// 		return $this->sc_userId;
-		return $newValue;
+		
+		return '';
 	}
 	
 	private function saveSoundcloudUser( $sc_userId ) {
 		$table_name = 'wcf' . WCF_N . '_user_soundcloud_connect';
 		$sqlQuery  = 'UPDATE ' . $table_name . ' ';
 		$sqlQuery .= 'SET `soundcloudID` = \'' . $sc_userId . '\' ';
-		$sqlQuery .= 'WHERE `' . $table_name .'`.`userID` = 1'; 
+		$sqlQuery .= 'WHERE `' . $table_name .'`.`userID` = ' . intval(WCF::getUser()->userID); 
 		WCF::getDB()->sendQuery($sqlQuery);
 	}
 	
@@ -141,6 +155,15 @@ class OptionTypeLinkerimage implements OptionType{
 		// DEBUG
 		// die( "In saveSoundcloudAccessToken(): $sqlQuery" );
 		WCF::getDB()->sendQuery($sqlQuery);		
+	}
+	
+	private function fetchSoundcloudAccessToken( $wcf_userID ){
+		$sqlQuery  = 'SELECT accessToken ';
+		$sqlQuery .= 'FROM wcf' . WCF_N . '_user_soundcloud_connect ';
+		$sqlQuery .= 'WHERE userID = ' . intval( $wcf_userID );
+		$row = WCF::getDB()->getFirstRow( $sqlQuery );
+		
+		return $row['accessToken'];
 	}
 }
 ?>
