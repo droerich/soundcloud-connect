@@ -1,0 +1,8 @@
+Im Profil soll der Soundcloud-Player angezeigt werden, wenn der User unsere App 
+autorisiert hat.
+
+HTML-Ausgaben über Template-System realisieren
+
+Als Alternatvie zum Autorisierungsverfahren ein Feld anbieten, in das der User 
+seinen Soundcloud Namen angibt. Anhand dieses Namens soll dann die User-ID 
+ermittelt und der Soundcloud-Player im Profil angzeigt werden.

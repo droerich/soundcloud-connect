@@ -29,8 +29,8 @@ class OptionTypeLinkerimage implements OptionType{
 		$sc_client = new Services_Soundcloud(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 		
 		// path to Soundcloud icons
-		$connectImageUrl = './wcf/icon/btn-connect-m.png';
-		$disconnectImageUrl = './wcf/icon/btn-disconnect-m.png';
+		$connectImageUrl = PAGE_URL . '/wcf/icon/btn-connect-m.png';
+		$disconnectImageUrl = PAGE_URL . '/wcf/icon/btn-disconnect-m.png';
 		
 		// Get SC authorize URL and send the URL parameter status along 
 		// with it. It will be sent back with the redirect URI.
@@ -38,8 +38,8 @@ class OptionTypeLinkerimage implements OptionType{
 		$sc_connectUrl .= '&state=soundcloudConnect'; // will be sent back by Soundcloud
 		$sc_connectUrl .= '&scope=non-expiring'; // request non-expiring auth token
 		
-		// TODO: Löschen der Soundcloud-Daten implementieren
-		$sc_disconnectUrl = '';
+		// TODO: dynamische URL?
+		$sc_disconnectUrl = PAGE_URL . '/index.php?form=UserProfileEdit&state=soundcloudDisconnect';
 		
 		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') { // Aufruf kommt von Soundcloud (Redirect URI) -> Autorisierungsvorgang
 	
@@ -73,8 +73,21 @@ class OptionTypeLinkerimage implements OptionType{
 			$this->saveSoundcloudUser( $sc_userId );
 			
 			$return .= 'Soundcloud-Autorisierung war erfolgreich.</br>';
-						
-		} else { // Nicht im Autorisierungs-Vorgang
+		
+		} elseif ( isset($_GET['state']) && $_GET['state'] == 'soundcloudDisconnect' ) { // Aufruf kommt von dieser Seite -> Soundlcoud-Daten löschen
+			if ( !$this->isUserConnected( WCF::getUser()->userID ) ) { // Benutzer ist noch nicht mit SC verbunden
+				return "Fehler: Lösen der Verbindung nicht möglich: Benutzer ist noch nicht mit Soundcloud verbunden.</br>";
+			}
+			$this->deleteSoundcloudUser( WCF::getUser()->userID );
+			
+			// Display Soundcloud connect-button
+			$return  = "<a href=\"$sc_connectUrl\" target=\"_self\">";
+			$return .= "<img src=\"$connectImageUrl\">";
+			$return .= '</a>';
+			$return .= '</br>';
+			$return .= 'Soundcloud-Verbindung wurde erfolgreich gelöst.</br>';
+			
+		} else { // Nicht im Autorisierungs-Vorgang, nicht im Lösch-Vorgang
 			if ( $this->isUserConnected( WCF::getUser()->userID ) ) { // Benutzer is bereits mit SC verbunden
 				// Get Soundcloud username from Soundcloud				
 				$sc_token = $this->fetchSoundcloudAccessToken( intval(WCF::getUser()->userID) );
@@ -164,6 +177,12 @@ class OptionTypeLinkerimage implements OptionType{
 		$row = WCF::getDB()->getFirstRow( $sqlQuery );
 		
 		return $row['accessToken'];
+	}
+	
+	private function deleteSoundcloudUser( $wcf_userID ) {
+		$sqlQuery  = 'DELETE FROM wcf' . WCF_N . '_user_soundcloud_connect ';
+		$sqlQuery .= 'WHERE userID = ' . intval( $wcf_userID );
+		WCF::getDB()->sendQuery( $sqlQuery );
 	}
 }
 ?>
