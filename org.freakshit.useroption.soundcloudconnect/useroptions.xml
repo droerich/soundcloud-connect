@@ -8,12 +8,7 @@
 			</category>
 		</categories>
 		<options>
-			<option name="soundcloudName">
-				<categoryname>profile.soundcloud</categoryname>
-				<optiontype>text</optiontype>
-				<outputclass>UserOptionOutputTestoption</outputclass>
-			</option>
- 			<option name="soundcloudConnect"> -->
+ 			<option name="soundcloudConnect">
 				<categoryname>profile.soundcloud</categoryname>
 				<optiontype>linkerimage</optiontype>
 				<outputclass>UserOptionOutputMyLinkerimage</outputclass>

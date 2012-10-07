@@ -38,7 +38,6 @@ class OptionTypeLinkerimage implements OptionType{
 		$sc_connectUrl .= '&state=soundcloudConnect'; // will be sent back by Soundcloud
 		$sc_connectUrl .= '&scope=non-expiring'; // request non-expiring auth token
 		
-		// TODO: dynamische URL?
 		$sc_disconnectUrl = PAGE_URL . '/index.php?form=UserProfileEdit&state=soundcloudDisconnect';
 		
 		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') { // Aufruf kommt von Soundcloud (Redirect URI) -> Autorisierungsvorgang

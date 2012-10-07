@@ -18,7 +18,7 @@
 		</item>
 
 		<item name="wcf.user.option.soundcloudConnect.description">
-		  <![CDATA[Klicke auf das Soundcloud-Logo, um dein WebBeatz-Konto mit deinem Soundcloud-Konto zu verbinden.]]>
+		  <![CDATA[Verbinde dein WebBeatz-Konto mit deinem Soundcloud-Konto oder lösche die Verbindung.]]>
 		</item>
 	</category>
 </language>

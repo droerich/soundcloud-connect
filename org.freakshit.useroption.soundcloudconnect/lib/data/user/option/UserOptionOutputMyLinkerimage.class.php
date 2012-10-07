@@ -27,11 +27,38 @@ class UserOptionOutputMyLinkerimage implements UserOptionOutput {
 	/**
 	 * @see UserOptionOutput::getOutput()
 	 */
-	public function getOutput(User $user, $optionData, $value) {				
-
-			// create div for styling
-			return "Der Wert von \$value ist $value</br>";
+	public function getOutput(User $user, $optionData, $value) {
+	
+		$return = '';
+		$sc_userId = $this->fetchSoundcloudId( $user->userID );
+		if ( !empty($sc_userId) ){			
+			$return .= '<iframe width="100%" height="450" scrolling="no" frameborder="no" ';
+			$return .= 'src="http://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundcloud.com%2Fusers%2F' . $sc_userId;
+			$return .= '&show_artwork=true"></iframe>';
+		} else {
+			$return .= 'Der Benutzer hat noch kein Soundcloud-Profil angegeben.';
 		}
+		return $return;
 	}
+	
+	private function isUserConnected( $wcf_userID ) {
+		$sqlQuery = 'SELECT soundcloudID
+			     FROM wcf' . WCF_N . '_user_soundcloud_connect
+			     WHERE userID = ' . intval($wcf_userID);
+		$row = WCF::getDB()->getFirstRow( $sqlQuery );
+		
+		$sc_userId = $row['soundcloudID'];
+		return !empty($sc_userId);
+	}
+	
+	private function fetchSoundcloudId( $wcf_userID ){
+		$sqlQuery  = 'SELECT soundcloudID ';
+		$sqlQuery .= 'FROM wcf' . WCF_N . '_user_soundcloud_connect ';
+		$sqlQuery .= 'WHERE userID = ' . intval( $wcf_userID );
+		$row = WCF::getDB()->getFirstRow( $sqlQuery );
+		
+		return $row['soundcloudID'];
+	}
+}
 
 ?>
