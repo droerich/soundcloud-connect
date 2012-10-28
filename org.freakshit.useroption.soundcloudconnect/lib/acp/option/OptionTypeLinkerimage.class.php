@@ -46,32 +46,43 @@ class OptionTypeLinkerimage implements OptionType{
 			
 			// exchange authorization code for access token
 			$sc_code = $_GET['code'];
-			$sc_token = $sc_client->accessToken($sc_code);
-			
-			// save auth token to database
-			$this->saveSoundcloudAccessToken( $sc_token );
-	
-			// make an authenticated call
+			$sc_token = $sc_client->accessToken($sc_code);			
+				
+			// make an authenticated call to the Soundcloud API
 			try {
 				$sc_response = json_decode($sc_client->get('me'), true);
 			} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
 				$return .= "Soundcloud-Fehler: " . $e->getMessage() . '</br>';
 				return $return;
 			}
-			// Save Soundcloud user ID
+			
+			// Get Soundlcoud user ID
 			$sc_userId = $sc_response['id'];
-			$sc_username = $sc_response['username'];
 			
-			// Display disconnect-button
-			$return  = "<a href=\"$sc_disconnectUrl\" target=\"_self\">";
-			$return .= "<img src=\"$disconnectImageUrl\">";
-			$return .= '</a>';
-			$return .= '</br>';
+			if( !($this->doesSoundcloudIdExist($sc_userId)) ){ // Souncdloud ID doesn't exist in database yet
 			
-			// Save the soundcloud data to the database
-			$this->saveSoundcloudUser( $sc_userId );
-			
-			$return .= 'Soundcloud-Autorisierung war erfolgreich.</br>';
+				// Store auth token in database
+				$this->saveSoundcloudAccessToken( $sc_token );
+				
+				// Display disconnect-button
+				$return  = "<a href=\"$sc_disconnectUrl\" target=\"_self\">";
+				$return .= "<img src=\"$disconnectImageUrl\">";
+				$return .= '</a>';
+				$return .= '</br>';
+				
+				// Save the soundcloud data to the database
+				$this->saveSoundcloudUser( $sc_userId );
+				
+				$return .= 'Soundcloud-Autorisierung war erfolgreich.</br>';
+			} else { // Soundcloud ID already exists in database -> Refuse Soundcloud connection
+				
+				// Display Soundcloud connect-button
+				$return  = "<a href=\"$sc_connectUrl\" target=\"_self\">";
+				$return .= "<img src=\"$connectImageUrl\">";
+				$return .= '</a>';
+				$return .= '</br>';
+				$return .= 'Fehler: dieses Soundcloud-Konto ist bereits mit einem Forum-Benutzer verbunden. Bitte wähle ein anderes Konto.</br>';				
+			}
 		
 		} elseif ( isset($_GET['state']) && $_GET['state'] == 'soundcloudDisconnect' ) { // Aufruf kommt von dieser Seite -> Soundlcoud-Daten löschen
 			if ( !$this->isUserConnected( WCF::getUser()->userID ) ) { // Benutzer ist noch nicht mit SC verbunden
@@ -148,6 +159,7 @@ class OptionTypeLinkerimage implements OptionType{
 		WCF::getDB()->sendQuery($sqlQuery);
 	}
 	
+	// Returns true, if an Soundcloud ID is associated to the current WCF user
 	private function isUserConnected( $wcf_userID ) {
 		$sqlQuery = 'SELECT soundcloudID
 			     FROM wcf' . WCF_N . '_user_soundcloud_connect
@@ -182,6 +194,19 @@ class OptionTypeLinkerimage implements OptionType{
 		$sqlQuery  = 'DELETE FROM wcf' . WCF_N . '_user_soundcloud_connect ';
 		$sqlQuery .= 'WHERE userID = ' . intval( $wcf_userID );
 		WCF::getDB()->sendQuery( $sqlQuery );
+	}
+	
+	// Returns true if the given Soundcloud ID is already in the database
+	private function doesSoundcloudIdExist( $sc_userId ) {
+		$sqlQuery  = 'SELECT `userID` FROM `wcf' . WCF_N . '_user_soundcloud_connect` ';
+		$sqlQuery .= 'WHERE `soundcloudID` = ' . intval($sc_userId);
+		$queryResource = WCF::getDB()->sendQuery( $sqlQuery );
+		return ( WCF::getDB()->countRows( $queryResource ) > 0 );
+// 		if( WCF::getDB()->countRows( $queryResource ) > 0 ) {
+// 			return true;
+// 		} else {
+// 			return false;
+// 		}
 	}
 }
 ?>
