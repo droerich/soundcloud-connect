@@ -37,8 +37,10 @@ class OptionTypeLinkerimage implements OptionType{
 		$sc_connectUrl = $sc_client->getAuthorizeUrl();
 		$sc_connectUrl .= '&state=soundcloudConnect'; // will be sent back by Soundcloud
 		$sc_connectUrl .= '&scope=non-expiring'; // request non-expiring auth token
-		
-		$sc_disconnectUrl = PAGE_URL . '/index.php?form=UserProfileEdit&state=soundcloudDisconnect';
+
+		// Build Souncdloud disconnect URL. It needs the 'www'
+		$pageUrl = parse_url(PAGE_URL);
+		$sc_disconnectUrl = $pageUrl["scheme"] . '://www.' . $pageUrl["host"] . $pageUrl["path"] . '/index.php?form=UserProfileEdit&state=soundcloudDisconnect';
 		
 		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') { // Aufruf kommt von Soundcloud (Redirect URI) -> Autorisierungsvorgang
 	
@@ -202,11 +204,6 @@ class OptionTypeLinkerimage implements OptionType{
 		$sqlQuery .= 'WHERE `soundcloudID` = ' . intval($sc_userId);
 		$queryResource = WCF::getDB()->sendQuery( $sqlQuery );
 		return ( WCF::getDB()->countRows( $queryResource ) > 0 );
-// 		if( WCF::getDB()->countRows( $queryResource ) > 0 ) {
-// 			return true;
-// 		} else {
-// 			return false;
-// 		}
 	}
 }
 ?>
