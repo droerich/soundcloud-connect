@@ -42,9 +42,7 @@ class OptionTypeLinkerimage implements OptionType{
 		$pageUrl = parse_url(PAGE_URL);
 		$sc_disconnectUrl = $pageUrl["scheme"] . '://www.' . $pageUrl["host"] . $pageUrl["path"] . '/index.php?form=UserProfileEdit&state=soundcloudDisconnect';
 		
-		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') { // Aufruf kommt von Soundcloud (Redirect URI) -> Autorisierungsvorgang
-	
-			$return = 'Habe code-Parameter empfangen. Starte Decodierung...</br>';
+		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') { // Aufruf kommt von Soundcloud (Redirect URI) -> Autorisierungsvorgang			
 			
 			// exchange authorization code for access token
 			$sc_code = $_GET['code'];
@@ -113,11 +111,15 @@ class OptionTypeLinkerimage implements OptionType{
 				$sc_username = $sc_response['username'];
 				
 				// Display disconnect-button
-				$return  = "<a href=\"$sc_disconnectUrl\" target=\"_self\">";
-				$return .= "<img src=\"$disconnectImageUrl\">";
-				$return .= '</a>';
-				$return .= '</br>';
-				$return .= "Dein Profil ist mit dem Soundcloud-Benutzer <b>${sc_username}</b> verbunden.</br>";
+// 				$return  = "<a href=\"$sc_disconnectUrl\" target=\"_self\">";
+// 				$return .= "<img src=\"$disconnectImageUrl\">";
+// 				$return .= '</a>';
+// 				$return .= '</br>';
+// 				$return .= "Dein Profil ist mit dem Soundcloud-Benutzer <b>${sc_username}</b> verbunden.</br>";
+				$status = 'connected';
+				WCF::getTPL()->assign('status', $status);
+				return WCF::getTPL()->fetch('optionTypeLinkerImage');
+// 				echo WCF::getTPL()->fetch('optionTypeLinkerImage');				
 			} else { // Benutzer ist noch nicht mit SC verbunden und befindet sich auch nicht im Autorisierungs-Vorgang
 			
 				// Display Soundcloud connect-button
