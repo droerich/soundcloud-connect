@@ -52,8 +52,12 @@ class OptionTypeLinkerimage implements OptionType{
 			try {
 				$sc_response = json_decode($sc_client->get('me'), true);
 			} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
-				$return .= "Soundcloud-Fehler: " . $e->getMessage() . '</br>';
-				return $return;
+				WCF::getTPL()->assign(array(
+					'status' => 'error_soundcloud',
+					'connectUrl' => $sc_connectUrl,
+					'error_message' => $e->getMessage
+				));
+				return WCF::getTPL()->fetch('optionTypeLinkerImage');
 			}
 			
 			// Get Soundlcoud user ID
@@ -64,39 +68,35 @@ class OptionTypeLinkerimage implements OptionType{
 				// Store auth token in database
 				$this->saveSoundcloudAccessToken( $sc_token );
 				
-				// Display disconnect-button
-				$return  = "<a href=\"$sc_disconnectUrl\" target=\"_self\">";
-				$return .= "<img src=\"$disconnectImageUrl\">";
-				$return .= '</a>';
-				$return .= '</br>';
 				
 				// Save the soundcloud data to the database
 				$this->saveSoundcloudUser( $sc_userId );
 				
-				$return .= 'Soundcloud-Autorisierung war erfolgreich.</br>';
+				WCF::getTPL()->assign(array(
+					'status' => 'has_connected',
+					'disconnectUrl' => $sc_disconnectUrl,
+				));
 			} else { // Soundcloud ID already exists in database -> Refuse Soundcloud connection
-				
-				// Display Soundcloud connect-button
-				$return  = "<a href=\"$sc_connectUrl\" target=\"_self\">";
-				$return .= "<img src=\"$connectImageUrl\">";
-				$return .= '</a>';
-				$return .= '</br>';
-				$return .= 'Fehler: dieses Soundcloud-Konto ist bereits mit einem Forum-Benutzer verbunden. Bitte wähle ein anderes Konto.</br>';				
+				WCF::getTPL()->assign(array(
+					'status' => 'error_account_exists',
+					'connectUrl' => $sc_connectUrl
+				));
 			}
 		
 		} elseif ( isset($_GET['state']) && $_GET['state'] == 'soundcloudDisconnect' ) { // Aufruf kommt von dieser Seite -> Soundlcoud-Daten löschen
 			if ( !$this->isUserConnected( WCF::getUser()->userID ) ) { // Benutzer ist noch nicht mit SC verbunden
-				return "Fehler: Lösen der Verbindung nicht möglich: Benutzer ist noch nicht mit Soundcloud verbunden.</br>";
+				WCF::getTPL()->assign(array(
+					'status' => 'error_account_does_not_exist',
+					'connectUrl' => $sc_connectUrl
+				));
+				return WCF::getTPL()->fetch('optionTypeLinkerImage');
 			}
 			$this->deleteSoundcloudUser( WCF::getUser()->userID );
 			
-			// Display Soundcloud connect-button
-			$return  = "<a href=\"$sc_connectUrl\" target=\"_self\">";
-			$return .= "<img src=\"$connectImageUrl\">";
-			$return .= '</a>';
-			$return .= '</br>';
-			$return .= 'Soundcloud-Verbindung wurde erfolgreich gelöst.</br>';
-			
+			WCF::getTPL()->assign(array(
+				'status' => 'has_disconnected',
+				'connectUrl' => $sc_connectUrl,
+			));
 		} else { // Nicht im Autorisierungs-Vorgang, nicht im Lösch-Vorgang
 			if ( $this->isUserConnected( WCF::getUser()->userID ) ) { // Benutzer is bereits mit SC verbunden
 				// Get Soundcloud username from Soundcloud				
@@ -105,32 +105,31 @@ class OptionTypeLinkerimage implements OptionType{
 				try {
 					$sc_response = json_decode($sc_client->get('me'), true);
 				} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
-					$return = "Soundcloud-Fehler: " . $e->getMessage() . '</br>';
-					return $return;
-				}			
+// 					$return = "Soundcloud-Fehler: " . $e->getMessage() . '</br>';
+// 					return $return;
+					WCF::getTPL()->assign(array(
+						'status' => 'error_soundcloud',
+						'disconnectUrl' => $sc_disconnectUrl,
+						'error_message' => $e->getMessage()
+					));
+					return WCF::getTPL()->fetch('optionTypeLinkerImage');
+				}
 				$sc_username = $sc_response['username'];
 				
-				// Display disconnect-button
-// 				$return  = "<a href=\"$sc_disconnectUrl\" target=\"_self\">";
-// 				$return .= "<img src=\"$disconnectImageUrl\">";
-// 				$return .= '</a>';
-// 				$return .= '</br>';
-// 				$return .= "Dein Profil ist mit dem Soundcloud-Benutzer <b>${sc_username}</b> verbunden.</br>";
-				$status = 'connected';
-				WCF::getTPL()->assign('status', $status);
-				return WCF::getTPL()->fetch('optionTypeLinkerImage');
-// 				echo WCF::getTPL()->fetch('optionTypeLinkerImage');				
-			} else { // Benutzer ist noch nicht mit SC verbunden und befindet sich auch nicht im Autorisierungs-Vorgang
-			
-				// Display Soundcloud connect-button
-				$return  = "<a href=\"$sc_connectUrl\" target=\"_self\">";
-				$return .= "<img src=\"$connectImageUrl\">";
-				$return .= '</a>';
-				$return .= '</br>';
-				$return .= 'Du bist noch nicht mit Soundcloud verbunden.</br>';
+				WCF::getTPL()->assign(array(
+					'status' => 'is_connected',
+					'disconnectUrl' => $sc_disconnectUrl,
+					'sc_username' => $sc_username
+				));
+			} else { // Benutzer ist noch nicht mit SC verbunden und befindet sich auch nicht im Autorisierungs-Vorgang			
+				
+				WCF::getTPL()->assign(array(
+					'status' => 'is_not_connected',
+					'connectUrl' => $sc_connectUrl,
+				));
 			}
 		}
-		return $return;
+		return WCF::getTPL()->fetch('optionTypeLinkerImage');
 	}
 	
 	/**
