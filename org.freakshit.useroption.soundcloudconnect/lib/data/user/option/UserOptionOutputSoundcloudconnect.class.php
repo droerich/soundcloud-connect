@@ -4,11 +4,13 @@ require_once(WCF_DIR.'lib/data/user/option/UserOptionOutput.class.php');
 require_once(WCF_DIR.'lib/data/user/User.class.php');
 
 /**
+ * Returns HTML code for Soundcloud player widget of the given user
+ *
  * @author  Deve <deve@webbeatz.de>
  * @package org.deve.useroption.testoption
- * @license CC BY-SA <http://creativecommons.org/licenses/by-sa/3.0/>
+ * 
  */
-class UserOptionOutputMyLinkerimage implements UserOptionOutput {
+class UserOptionOutputSoundcloudconnect implements UserOptionOutput {
 
 	/**
 	 * @see UserOptionOutput::getShortOutput()

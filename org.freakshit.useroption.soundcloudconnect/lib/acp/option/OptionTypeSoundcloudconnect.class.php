@@ -11,10 +11,11 @@ define('CLIENT_SECRET', '9c3b63959977bf61404110fc603427f2');
 define('REDIRECT_URL', 'http://www.meniunddeve.de/wbb-test/index.php?form=UserProfileEdit');
 
 /**
- * My implementation of a user option type
+ * This option type allows the user to [dis]connect with an existing Soundcloud
+ * account by OAuth.
  *
  */
-class OptionTypeLinkerimage implements OptionType{
+class OptionTypeSoundcloudconnect implements OptionType{
 
 	
 	/**
@@ -42,7 +43,7 @@ class OptionTypeLinkerimage implements OptionType{
 		$pageUrl = parse_url(PAGE_URL);
 		$sc_disconnectUrl = $pageUrl["scheme"] . '://www.' . $pageUrl["host"] . $pageUrl["path"] . '/index.php?form=UserProfileEdit&state=soundcloudDisconnect';
 		
-		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') { // Aufruf kommt von Soundcloud (Redirect URI) -> Autorisierungsvorgang			
+		if (isset($_GET['state']) && $_GET['state'] == 'soundcloudConnect') { // Call from Soundcloud (Redirect URI) -> authorization process
 			
 			// exchange authorization code for access token
 			$sc_code = $_GET['code'];
@@ -57,7 +58,7 @@ class OptionTypeLinkerimage implements OptionType{
 					'connectUrl' => $sc_connectUrl,
 					'error_message' => $e->getMessage
 				));
-				return WCF::getTPL()->fetch('optionTypeLinkerImage');
+				return WCF::getTPL()->fetch('optionTypeSoundcloudconnect');
 			}
 			
 			// Get Soundlcoud user ID
@@ -83,13 +84,13 @@ class OptionTypeLinkerimage implements OptionType{
 				));
 			}
 		
-		} elseif ( isset($_GET['state']) && $_GET['state'] == 'soundcloudDisconnect' ) { // Aufruf kommt von dieser Seite -> Soundlcoud-Daten löschen
-			if ( !$this->isUserConnected( WCF::getUser()->userID ) ) { // Benutzer ist noch nicht mit SC verbunden
+		} elseif ( isset($_GET['state']) && $_GET['state'] == 'soundcloudDisconnect' ) { // Call from this page -> delete Soundcloud data
+			if ( !$this->isUserConnected( WCF::getUser()->userID ) ) { // User isn't connected to Soundcloud yet
 				WCF::getTPL()->assign(array(
 					'status' => 'error_account_does_not_exist',
 					'connectUrl' => $sc_connectUrl
 				));
-				return WCF::getTPL()->fetch('optionTypeLinkerImage');
+				return WCF::getTPL()->fetch('optionTypeSoundcloudconnect');
 			}
 			$this->deleteSoundcloudUser( WCF::getUser()->userID );
 			
@@ -97,22 +98,20 @@ class OptionTypeLinkerimage implements OptionType{
 				'status' => 'has_disconnected',
 				'connectUrl' => $sc_connectUrl,
 			));
-		} else { // Nicht im Autorisierungs-Vorgang, nicht im Lösch-Vorgang
-			if ( $this->isUserConnected( WCF::getUser()->userID ) ) { // Benutzer is bereits mit SC verbunden
+		} else { // Neither authorization nor disconnect
+			if ( $this->isUserConnected( WCF::getUser()->userID ) ) { // User is already connected to Soundcloud
 				// Get Soundcloud username from Soundcloud				
 				$sc_token = $this->fetchSoundcloudAccessToken( intval(WCF::getUser()->userID) );
 				$sc_client->setAccessToken( $sc_token );
 				try {
 					$sc_response = json_decode($sc_client->get('me'), true);
 				} catch (Services_Soundcloud_Invalid_Http_Response_Code_Exception $e) {
-// 					$return = "Soundcloud-Fehler: " . $e->getMessage() . '</br>';
-// 					return $return;
 					WCF::getTPL()->assign(array(
 						'status' => 'error_soundcloud',
 						'disconnectUrl' => $sc_disconnectUrl,
 						'error_message' => $e->getMessage()
 					));
-					return WCF::getTPL()->fetch('optionTypeLinkerImage');
+					return WCF::getTPL()->fetch('optionTypeSoundcloudconnect');
 				}
 				$sc_username = $sc_response['username'];
 				
@@ -121,7 +120,7 @@ class OptionTypeLinkerimage implements OptionType{
 					'disconnectUrl' => $sc_disconnectUrl,
 					'sc_username' => $sc_username
 				));
-			} else { // Benutzer ist noch nicht mit SC verbunden und befindet sich auch nicht im Autorisierungs-Vorgang			
+			} else { // User is neither connected to Soundcloud nor in authorization process	
 				
 				WCF::getTPL()->assign(array(
 					'status' => 'is_not_connected',
@@ -129,7 +128,7 @@ class OptionTypeLinkerimage implements OptionType{
 				));
 			}
 		}
-		return WCF::getTPL()->fetch('optionTypeLinkerImage');
+		return WCF::getTPL()->fetch('optionTypeSoundcloudconnect');
 	}
 	
 	/**
@@ -174,13 +173,9 @@ class OptionTypeLinkerimage implements OptionType{
 	}
 	
 	private function saveSoundcloudAccessToken( $sc_token ) {
-		// DEBUG
-		// die( "Soundcloud access token: ${sc_token['access_token']}, expires ${sc_token['scope']} " );
 		$sqlQuery = 'REPLACE INTO	wcf' . WCF_N . '_user_soundcloud_connect
 				(userID, accessToken)
 					VALUES (' . intval(WCF::getUser()->userID) . ", '" . $sc_token['access_token'] . "')";
-		// DEBUG
-		// die( "In saveSoundcloudAccessToken(): $sqlQuery" );
 		WCF::getDB()->sendQuery($sqlQuery);		
 	}
 	

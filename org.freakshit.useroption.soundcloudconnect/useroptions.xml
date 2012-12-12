@@ -10,8 +10,8 @@
 		<options>
  			<option name="soundcloudConnect">
 				<categoryname>profile.soundcloud</categoryname>
-				<optiontype>linkerimage</optiontype>
-				<outputclass>UserOptionOutputMyLinkerimage</outputclass>
+				<optiontype>soundcloudconnect</optiontype>
+				<outputclass>UserOptionOutputSoundcloudconnect</outputclass>
 			</option> 
 		</options>
 	</import>

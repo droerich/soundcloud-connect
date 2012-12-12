@@ -6,7 +6,7 @@ FILES_TAR=files.tar
 echo "Packing files.tar"
 echo ""
 cd $PACKAGE_NAME;
-tar -cv --exclude=*~ -f $FILES_TAR lib icon
+tar -cv --exclude=*~ -f $FILES_TAR lib icon templates
 # mv files.tar $PACKAGE_NAME
 echo ""
 

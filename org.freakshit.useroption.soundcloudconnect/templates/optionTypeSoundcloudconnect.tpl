@@ -11,7 +11,7 @@
 		<img src="{$disconnectImageUrl}">
 	</a></br>
 {else}
-	Interner Fehler in optionTypeLinkerImage.tpl: es wurde weder die 
+	Interner Fehler in optionTypeSoundcloudconnect.tpl: es wurde weder die 
 	Templatevariable connectUrl noch disconnectUrl gesetzt.</br>
 {/if}
 
